@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import requests, json
 from datetime import datetime
 from dotenv import load_dotenv
-import os
+import os 
 from pymongo import MongoClient
 
 load_dotenv()
