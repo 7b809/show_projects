@@ -1,0 +1,25 @@
+{% extends "base.html" %} {% block content %}
+
+<h2>Select Netlify Account</h2>
+
+<div class="row">
+  {% for acc in accounts %}
+
+  <div class="col-md-4">
+    <div class="card mb-3 shadow">
+      <div class="card-body">
+        <h5>Account {{acc.account_num}}</h5>
+
+        <p>{{acc.account_title}}</p>
+
+        <a href="/sites?account={{acc.account_num}}" class="btn btn-primary">
+          Open Sites
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% endfor %}
+</div>
+
+{% endblock %}
