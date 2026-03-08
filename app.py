@@ -177,6 +177,63 @@ def get_vercel_projects(token):
 # -----------------------------------------------
 
 
+# --------- Railway project fetch ----------
+def get_railway_projects(token):
+
+    url = "https://backboard.railway.app/graphql/v2"
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    query = """
+    query {
+      me {
+        projects {
+          edges {
+            node {
+              id
+              name
+              createdAt
+            }
+          }
+        }
+      }
+    }
+    """
+
+    r = requests.post(
+        url,
+        headers=headers,
+        json={"query": query}
+    )
+
+    projects = []
+
+    data = r.json()
+
+    edges = data.get("data", {}).get("me", {}).get("projects", {}).get("edges", [])
+
+    for p in edges:
+
+        node = p.get("node", {})
+
+        projects.append({
+            "name": node.get("name"),
+            "url": "https://railway.app/dashboard",
+            "created": node.get("createdAt"),
+            "created_formatted": format_time(node.get("createdAt")),
+            "repo": None,
+            "github_user": None,
+            "repo_name": None,
+            "screenshot": None
+        })
+
+    return projects
+# -----------------------------------------------
+
+
 @app.route("/")
 def index():
 
@@ -211,6 +268,10 @@ def sites():
 
     if provider == "vercel":
         sites = get_vercel_projects(token)
+
+    elif provider == "railway":
+        sites = get_railway_projects(token)
+
     else:
         sites = get_sites(token)
 
