@@ -180,7 +180,7 @@ def get_vercel_projects(token):
 # --------- Railway project fetch ----------
 def get_railway_projects(token):
 
-    url = "https://backboard.railway.app/graphql/v2"
+    url = "https://backboard.railway.com/graphql/v2"
 
     headers = {
         "Authorization": f"Bearer {token}",
@@ -190,12 +190,24 @@ def get_railway_projects(token):
     query = """
     query {
       me {
-        projects {
-          edges {
-            node {
-              id
-              name
-              createdAt
+        workspaces {
+          name
+          projects {
+            edges {
+              node {
+                id
+                name
+                createdAt
+                services {
+                  edges {
+                    node {
+                      id
+                      name
+                      createdAt
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -209,28 +221,40 @@ def get_railway_projects(token):
         json={"query": query}
     )
 
-    projects = []
+    sites = []
 
     data = r.json()
 
-    edges = data.get("data", {}).get("me", {}).get("projects", {}).get("edges", [])
+    workspaces = data.get("data", {}).get("me", {}).get("workspaces", [])
 
-    for p in edges:
+    for ws in workspaces:
 
-        node = p.get("node", {})
+        for p in ws.get("projects", {}).get("edges", []):
 
-        projects.append({
-            "name": node.get("name"),
-            "url": "https://railway.app/dashboard",
-            "created": node.get("createdAt"),
-            "created_formatted": format_time(node.get("createdAt")),
-            "repo": None,
-            "github_user": None,
-            "repo_name": None,
-            "screenshot": None
-        })
+            project = p.get("node", {})
 
-    return projects
+            project_name = project.get("name")
+
+            created = project.get("createdAt")
+
+            services = project.get("services", {}).get("edges", [])
+
+            for s in services:
+
+                service = s.get("node", {})
+
+                sites.append({
+                    "name": f"{project_name} / {service.get('name')}",
+                    "url": "https://railway.app/dashboard",
+                    "created": service.get("createdAt"),
+                    "created_formatted": format_time(service.get("createdAt")),
+                    "repo": None,
+                    "github_user": None,
+                    "repo_name": None,
+                    "screenshot": None
+                })
+
+    return sites
 # -----------------------------------------------
 
 
